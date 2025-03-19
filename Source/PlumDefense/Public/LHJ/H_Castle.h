@@ -23,4 +23,18 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+// 외형 
+public:
+	UPROPERTY(VisibleAnyWhere)
+	class UStaticMeshComponent* CastleMesh;
+	UPROPERTY(VisibleAnyWhere)
+	class UBoxComponent* CastleCollision;
+
+// 체력
+public:
+	UPROPERTY(EditDefaultsOnly)
+	int32 MaxHealth = 10;
+private:
+	UPROPERTY(visibleanywhere)
+	int32 Health;
 };
