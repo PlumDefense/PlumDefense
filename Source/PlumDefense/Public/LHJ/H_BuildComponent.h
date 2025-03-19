@@ -59,4 +59,14 @@ private: // Placement
 	TSubclassOf<class AActor> PlaceTower;
 
 	bool bCanPlace;
+
+private: // Rotation
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	class UInputAction* IA_RotateBuild;
+	void F_Rotation();
+	void F_EndRotation();
+	
+	FRotator BuildRotation;
+
+	FTimerHandle TimerHandle_Rotation;
 };

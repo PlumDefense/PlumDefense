@@ -5,10 +5,10 @@
 
 #include "EnhancedInputComponent.h"
 #include "InputActionValue.h"
-#include "PlumDefense.h"
 
 #include "Camera/CameraComponent.h"
 #include "LHJ/H_User.h"
+#include "PlumDefense.h"
 
 UH_BuildComponent::UH_BuildComponent()
 {
@@ -24,6 +24,11 @@ UH_BuildComponent::UH_BuildComponent()
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Placement.IA_Placement'"));
 	if (tmpPlace.Succeeded())
 		IA_Placement = tmpPlace.Object;
+
+	ConstructorHelpers::FObjectFinder<UInputAction> tmpRotation(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_RotateBuild.IA_RotateBuild'"));
+	if (tmpRotation.Succeeded())
+		IA_RotateBuild = tmpRotation.Object;
 }
 
 
@@ -75,6 +80,8 @@ void UH_BuildComponent::SetupInputBinding(class UEnhancedInputComponent* input)
 {
 	input->BindAction(IA_Build, ETriggerEvent::Started, this, &UH_BuildComponent::F_Build);
 	input->BindAction(IA_Placement, ETriggerEvent::Started, this, &UH_BuildComponent::F_Place);
+	input->BindAction(IA_RotateBuild, ETriggerEvent::Started, this, &UH_BuildComponent::F_Rotation);
+	input->BindAction(IA_RotateBuild, ETriggerEvent::Completed, this, &UH_BuildComponent::F_EndRotation);
 }
 
 
@@ -108,6 +115,7 @@ void UH_BuildComponent::PreviewBuild()
 	if (bHit)
 	{
 		BuildTransform.SetLocation(outHit.Location);
+		BuildTransform.SetRotation(BuildRotation.Quaternion());
 		PreviewMesh->SetWorldTransform(BuildTransform);
 		PreviewMesh->SetMaterial(0, MI_Preview_True);
 		bCanPlace = true;
@@ -129,4 +137,18 @@ void UH_BuildComponent::F_Place()
 	SpawnParams.Owner = user;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
 	GetWorld()->SpawnActor<AActor>(PlaceTower, BuildTransform, SpawnParams);
+}
+
+void UH_BuildComponent::F_Rotation()
+{
+	GetWorld()->GetTimerManager().SetTimer(TimerHandle_Rotation, [&]()
+	{
+		BuildRotation = BuildTransform.GetRotation().Rotator() + FRotator(0, 5, 0);
+	}, 0.1, true);
+}
+
+void UH_BuildComponent::F_EndRotation()
+{
+	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Rotation);
+	TimerHandle_Rotation = FTimerHandle();
 }
