@@ -19,6 +19,11 @@ UH_BuildComponent::UH_BuildComponent()
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Build.IA_Build'"));
 	if (tmpBuild.Succeeded())
 		IA_Build = tmpBuild.Object;
+
+	ConstructorHelpers::FObjectFinder<UInputAction> tmpPlace(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Placement.IA_Placement'"));
+	if (tmpPlace.Succeeded())
+		IA_Placement = tmpPlace.Object;
 }
 
 
@@ -37,13 +42,19 @@ void UH_BuildComponent::BeginPlay()
 	UStaticMesh* Mesh = LoadObject<UStaticMesh>(
 		nullptr, TEXT("/Script/Engine.StaticMesh'/Engine/VREditor/BasicMeshes/SM_Cube_01.SM_Cube_01'"));
 	if (Mesh)
+	{
 		PreviewMesh->SetStaticMesh(Mesh);
+		PreviewMesh->SetVisibility(false);
+		PreviewMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	}
 
 	MI_Preview_True = LoadObject<UMaterialInterface>(
-		nullptr, TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Blueprints/LHJ/Mat/MI_Preview_True.MI_Preview_True'"));
+		nullptr, TEXT(
+			"/Script/Engine.MaterialInstanceConstant'/Game/Blueprints/LHJ/Mat/MI_Preview_True.MI_Preview_True'"));
 
 	MI_Preview_False = LoadObject<UMaterialInterface>(
-		nullptr, TEXT("/Script/Engine.MaterialInstanceConstant'/Game/Blueprints/LHJ/Mat/MI_Preview_False.MI_Preview_False'"));
+		nullptr, TEXT(
+			"/Script/Engine.MaterialInstanceConstant'/Game/Blueprints/LHJ/Mat/MI_Preview_False.MI_Preview_False'"));
 }
 
 void UH_BuildComponent::InitializeComponent()
@@ -63,6 +74,7 @@ void UH_BuildComponent::InitializeComponent()
 void UH_BuildComponent::SetupInputBinding(class UEnhancedInputComponent* input)
 {
 	input->BindAction(IA_Build, ETriggerEvent::Started, this, &UH_BuildComponent::F_Build);
+	input->BindAction(IA_Placement, ETriggerEvent::Started, this, &UH_BuildComponent::F_Place);
 }
 
 
@@ -76,7 +88,7 @@ void UH_BuildComponent::TickComponent(float DeltaTime, ELevelTick TickType,
 		PreviewBuild();
 }
 
-void UH_BuildComponent::F_Build(const struct FInputActionValue& Value)
+void UH_BuildComponent::F_Build()
 {
 	bCanBuild = !bCanBuild;
 	if (bCanBuild)
@@ -95,14 +107,26 @@ void UH_BuildComponent::PreviewBuild()
 	bool bHit = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECC_Visibility, params);
 	if (bHit)
 	{
-		PreviewMesh->SetWorldTransform(FTransform(outHit.Location));
+		BuildTransform.SetLocation(outHit.Location);
+		PreviewMesh->SetWorldTransform(BuildTransform);
 		PreviewMesh->SetMaterial(0, MI_Preview_True);
-
+		bCanPlace = true;
 		LOG_S(Warning, TEXT("Hit: %s"), *outHit.GetActor()->GetName());
 	}
 	else
 	{
 		PreviewMesh->SetWorldTransform(FTransform(end));
 		PreviewMesh->SetMaterial(0, MI_Preview_False);
+		bCanPlace = false;
 	}
+}
+
+void UH_BuildComponent::F_Place()
+{
+	if (!bCanPlace) return;
+
+	FActorSpawnParameters SpawnParams;
+	SpawnParams.Owner = user;
+	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	GetWorld()->SpawnActor<AActor>(PlaceTower, BuildTransform, SpawnParams);
 }

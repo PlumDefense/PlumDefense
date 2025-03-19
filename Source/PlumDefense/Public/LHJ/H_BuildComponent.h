@@ -7,12 +7,12 @@
 #include "H_BuildComponent.generated.h"
 
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class PLUMDEFENSE_API UH_BuildComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	// Sets default values for this component's properties
 	UH_BuildComponent();
 
@@ -21,9 +21,11 @@ protected:
 	virtual void BeginPlay() override;
 	virtual void InitializeComponent() override;
 	virtual void SetupInputBinding(class UEnhancedInputComponent* input);
-public:	
+
+public:
 	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override;
 
 private:
 	UPROPERTY()
@@ -32,9 +34,10 @@ private:
 private: // Build
 	UPROPERTY(VisibleAnywhere, Category = Input)
 	class UInputAction* IA_Build;
-	void F_Build(const struct FInputActionValue& Value);
+	void F_Build();
 
 	bool bCanBuild;
+	FTransform BuildTransform;
 
 	void PreviewBuild();
 
@@ -46,4 +49,14 @@ private: // Build
 	class UMaterialInterface* MI_Preview_True;
 	UPROPERTY()
 	class UMaterialInterface* MI_Preview_False;
+
+private: // Placement
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	class UInputAction* IA_Placement;
+	void F_Place();
+
+	UPROPERTY(EditAnywhere)
+	TSubclassOf<class AActor> PlaceTower;
+
+	bool bCanPlace;
 };
