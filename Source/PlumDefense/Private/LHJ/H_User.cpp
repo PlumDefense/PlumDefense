@@ -9,6 +9,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputMappingContext.h"
+#include "LHJ/H_BuildComponent.h"
 
 // Sets default values
 AH_User::AH_User()
@@ -22,6 +23,7 @@ AH_User::AH_User()
 	CameraComponent->bUsePawnControlRotation = true;
 
 	MovementComponent = CreateDefaultSubobject<UH_MovementComponent>(TEXT("MovementComponent"));
+	BuildComponent = CreateDefaultSubobject<UH_BuildComponent>(TEXT("BuildComponent"));
 
 	ConstructorHelpers::FObjectFinder<UInputMappingContext> tmpIMC(TEXT("/Script/EnhancedInput.InputMappingContext'/Game/Input/IMC_Player.IMC_Player'"));
 	if (tmpIMC.Succeeded())
