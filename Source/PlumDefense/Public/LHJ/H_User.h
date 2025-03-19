@@ -6,6 +6,8 @@
 #include "GameFramework/Character.h"
 #include "H_User.generated.h"
 
+DECLARE_MULTICAST_DELEGATE_OneParam(FInputBindingDelegate, class UEnhancedInputComponent*)
+
 UCLASS()
 class PLUMDEFENSE_API AH_User : public ACharacter
 {
@@ -26,4 +28,16 @@ public:
 	// Called to bind functionality to input
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
+private:
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	class UInputMappingContext* IMC_Player;
+public:
+	FInputBindingDelegate InputBindingDelegate; // 인풋 바인딩용
+	
+private:
+	UPROPERTY(visibleanywhere)
+	class UCameraComponent* CameraComponent;
+	UPROPERTY(visibleanywhere)
+	class UH_MovementComponent* MovementComponent;
+	
 };
