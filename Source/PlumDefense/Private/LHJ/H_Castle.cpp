@@ -3,6 +3,7 @@
 
 #include "../../Public/LHJ/H_Castle.h"
 
+#include "PlumDefense.h"
 #include "Components/BoxComponent.h"
 
 // Sets default values
@@ -12,6 +13,7 @@ AH_Castle::AH_Castle()
 	PrimaryActorTick.bCanEverTick = true;
 
 	CastleCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("CastleCollision"));
+	CastleCollision->OnComponentBeginOverlap.AddDynamic(this, &AH_Castle::OnOverlapBegin);
 	CastleCollision->SetBoxExtent(FVector(50));
 	RootComponent = CastleCollision;
 
@@ -38,4 +40,23 @@ void AH_Castle::BeginPlay()
 void AH_Castle::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+}
+
+void AH_Castle::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp,
+                               int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	DecreateHealth();
+}
+
+void AH_Castle::DecreateHealth()
+{
+	
+	if (Health < 0)
+	{
+		LOG_S(Warning, TEXT("Already Castle Health 0"));
+		return;
+	}
+	
+	--Health;
+	LOG_S(Warning, TEXT("Current Castle Health: %d"), Health);
 }
