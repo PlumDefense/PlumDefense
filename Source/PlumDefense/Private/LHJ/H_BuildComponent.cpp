@@ -29,6 +29,11 @@ UH_BuildComponent::UH_BuildComponent()
 		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_RotateBuild.IA_RotateBuild'"));
 	if (tmpRotation.Succeeded())
 		IA_RotateBuild = tmpRotation.Object;
+
+	ConstructorHelpers::FObjectFinder<UInputAction> tmpDestroy(
+		TEXT("/Script/EnhancedInput.InputAction'/Game/Input/IA_Destroy.IA_Destroy'"));
+	if (tmpDestroy.Succeeded())
+		IA_Destroy = tmpDestroy.Object;
 }
 
 
@@ -39,16 +44,17 @@ void UH_BuildComponent::BeginPlay()
 
 	UserCamera = user->GetComponentByClass<UCameraComponent>();
 
-	PreviewMesh = Cast<UStaticMeshComponent>
-	(user->AddComponentByClass(UStaticMeshComponent::StaticClass(), false,
-	                           FTransform::Identity, false));
+	PreviewMesh = Cast<UStaticMeshComponent>(user->AddComponentByClass(UStaticMeshComponent::StaticClass(), true,
+	                                                                   FTransform(FRotator(0, 0, 0), FVector(0, 0, 0),
+		                                                                   FVector(1, 1, 1)),
+	                                                                   false));
 
 	// Static Mesh 설정
-	UStaticMesh* Mesh = LoadObject<UStaticMesh>(
-		nullptr, TEXT("/Script/Engine.StaticMesh'/Engine/VREditor/BasicMeshes/SM_Cube_01.SM_Cube_01'"));
-	if (Mesh)
+	UStaticMesh* SM_Preview = LoadObject<UStaticMesh>(
+		nullptr, TEXT("/Script/Engine.StaticMesh'/Engine/BasicShapes/Cube.Cube'"));
+	if (SM_Preview)
 	{
-		PreviewMesh->SetStaticMesh(Mesh);
+		PreviewMesh->SetStaticMesh(SM_Preview);
 		PreviewMesh->SetVisibility(false);
 		PreviewMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	}
@@ -82,6 +88,8 @@ void UH_BuildComponent::SetupInputBinding(class UEnhancedInputComponent* input)
 	input->BindAction(IA_Placement, ETriggerEvent::Started, this, &UH_BuildComponent::F_Place);
 	input->BindAction(IA_RotateBuild, ETriggerEvent::Started, this, &UH_BuildComponent::F_Rotation);
 	input->BindAction(IA_RotateBuild, ETriggerEvent::Completed, this, &UH_BuildComponent::F_EndRotation);
+	input->BindAction(IA_Destroy, ETriggerEvent::Triggered, this, &UH_BuildComponent::F_Destroy);
+	input->BindAction(IA_Destroy, ETriggerEvent::Completed, this, &UH_BuildComponent::F_EndDestroy);
 }
 
 
@@ -116,14 +124,18 @@ void UH_BuildComponent::PreviewBuild()
 	{
 		BuildTransform.SetLocation(outHit.Location);
 		BuildTransform.SetRotation(BuildRotation.Quaternion());
+		BuildTransform.SetScale3D(FVector(1));
 		PreviewMesh->SetWorldTransform(BuildTransform);
 		PreviewMesh->SetMaterial(0, MI_Preview_True);
 		bCanPlace = true;
-		LOG_S(Warning, TEXT("Hit: %s"), *outHit.GetActor()->GetName());
+		// LOG_S(Warning, TEXT("Hit: %s"), *outHit.GetActor()->GetName());
 	}
 	else
 	{
-		PreviewMesh->SetWorldTransform(FTransform(end));
+		BuildTransform.SetLocation(end);
+		BuildTransform.SetRotation(BuildRotation.Quaternion());
+		BuildTransform.SetScale3D(FVector(1));
+		PreviewMesh->SetWorldTransform(BuildTransform);
 		PreviewMesh->SetMaterial(0, MI_Preview_False);
 		bCanPlace = false;
 	}
@@ -136,7 +148,9 @@ void UH_BuildComponent::F_Place()
 	FActorSpawnParameters SpawnParams;
 	SpawnParams.Owner = user;
 	SpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
-	GetWorld()->SpawnActor<AActor>(PlaceTower, BuildTransform, SpawnParams);
+	auto placeActor = GetWorld()->SpawnActor<AActor>(PlaceTower, BuildTransform, SpawnParams);
+	if (placeActor)
+		placeActor->Tags.Add("Buildable");
 }
 
 void UH_BuildComponent::F_Rotation()
@@ -151,4 +165,55 @@ void UH_BuildComponent::F_EndRotation()
 {
 	GetWorld()->GetTimerManager().ClearTimer(TimerHandle_Rotation);
 	TimerHandle_Rotation = FTimerHandle();
+}
+
+void UH_BuildComponent::F_Destroy()
+{
+	FHitResult outHit;
+	FVector start = UserCamera->GetComponentLocation();
+	FVector end = start + UserCamera->GetForwardVector() * 1000;
+	FCollisionQueryParams params;
+	params.AddIgnoredActor(user);
+	bool bHit = GetWorld()->LineTraceSingleByChannel(outHit, start, end, ECC_Visibility, params);
+
+	if (bHit && outHit.GetActor()->ActorHasTag("Buildable"))
+	{
+		if (DestroyActor->IsValidLowLevel() && DestroyActor != outHit.GetActor())
+		{
+			UStaticMeshComponent* MeshComponent = DestroyActor->FindComponentByClass<UStaticMeshComponent>();
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterial(0, MI_Destroy);
+			}
+		}
+
+		DestroyActor = outHit.GetActor();
+
+		UStaticMeshComponent* MeshComponent = DestroyActor->FindComponentByClass<UStaticMeshComponent>();
+		auto tmpMI = MeshComponent->GetMaterial(0);
+		if (tmpMI != MI_Preview_False)
+			MI_Destroy = tmpMI;
+		MeshComponent->SetMaterial(0, MI_Preview_False);
+	}
+	else
+	{
+		if (DestroyActor->IsValidLowLevel())
+		{
+			UStaticMeshComponent* MeshComponent = DestroyActor->FindComponentByClass<UStaticMeshComponent>();
+			if (MeshComponent)
+			{
+				MeshComponent->SetMaterial(0, MI_Destroy);
+			}
+		}
+		DestroyActor = nullptr;
+	}
+}
+
+void UH_BuildComponent::F_EndDestroy()
+{
+	if (DestroyActor->IsValidLowLevel())
+	{
+		DestroyActor->Destroy();
+		DestroyActor = nullptr;
+	}
 }

@@ -69,4 +69,16 @@ private: // Rotation
 	FRotator BuildRotation;
 
 	FTimerHandle TimerHandle_Rotation;
+
+private: // Destroy
+	UPROPERTY(VisibleAnywhere, Category = Input)
+	class UInputAction* IA_Destroy;
+	void F_Destroy();
+	void F_EndDestroy();
+
+	bool bCanDestroy;
+	UPROPERTY()
+	class AActor* DestroyActor;
+	UPROPERTY()
+	class UMaterialInterface* MI_Destroy;
 };
