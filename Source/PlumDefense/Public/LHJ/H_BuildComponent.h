@@ -81,4 +81,7 @@ private: // Destroy
 	class AActor* DestroyActor;
 	UPROPERTY()
 	class UMaterialInterface* MI_Destroy;
+
+	// 포탑의 높이
+	float PreviewMeshHalfHeight;
 };
