@@ -4,7 +4,7 @@
 #include "GameFramework/Actor.h"
 #include "PathFinding.generated.h"
 
-struct FNode;
+struct FSNode;
 class AGrid;
 
 UCLASS()
@@ -34,8 +34,8 @@ public:
 public:
 	void FindPath(const FVector& StartPos, const FVector& TargetPos);
 
-	int GetDistance(FNode* NodeA, FNode* NodeB);
+	int GetDistance(FSNode* NodeA, FSNode* NodeB);
 
-	void RetracePath(FNode* StartNode, FNode* EndNode);
+	void RetracePath(FSNode* StartNode, FSNode* EndNode);
 
 };
