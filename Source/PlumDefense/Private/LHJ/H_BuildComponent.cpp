@@ -57,7 +57,7 @@ void UH_BuildComponent::BeginPlay()
 		PreviewMesh->SetStaticMesh(SM_Preview);
 		PreviewMesh->SetVisibility(false);
 		PreviewMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		PreviewMeshHalfHeight = PreviewMesh->Bounds.BoxExtent.Z / 2;
+		PreviewMeshHalfHeight = PreviewMesh->Bounds.BoxExtent.Z;
 	}
 
 	MI_Preview_True = LoadObject<UMaterialInterface>(
@@ -125,7 +125,9 @@ void UH_BuildComponent::PreviewBuild()
 	if (bHit)
 	{
 		outHit.Location.Z += PreviewMeshHalfHeight;
-		BuildTransform.SetLocation(outHit.Location + PreviewMeshHalfHeight);
+		//BuildTransform.SetLocation(outHit.Location + PreviewMeshHalfHeight);
+		// FVector halfVector= FVector::UpVector * PreviewMesh->Bounds.BoxExtent.Z / 2;
+		BuildTransform.SetLocation(outHit.Location);
 		BuildTransform.SetRotation(BuildRotation.Quaternion());
 		BuildTransform.SetScale3D(FVector(1));
 		PreviewMesh->SetWorldTransform(BuildTransform);
