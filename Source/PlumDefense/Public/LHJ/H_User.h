@@ -35,9 +35,11 @@ public:
 	FInputBindingDelegate InputBindingDelegate; // 인풋 바인딩용
 	
 private:
-	UPROPERTY(visibleanywhere)
+	UPROPERTY(VisibleAnywhere)
 	class UCameraComponent* CameraComponent;
-	UPROPERTY(visibleanywhere)
+	UPROPERTY(VisibleAnywhere)
 	class UH_MovementComponent* MovementComponent;
+	UPROPERTY(VisibleAnywhere)
+	class UH_BuildComponent* BuildComponent;
 	
 };
