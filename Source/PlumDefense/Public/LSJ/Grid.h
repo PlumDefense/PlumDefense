@@ -5,14 +5,14 @@
 #include "Grid.generated.h"
 
 USTRUCT(Atomic)
-struct FNode {
+struct FSNode {
 	GENERATED_USTRUCT_BODY()
 
 public:
 	bool bWalkable;
 	FVector WorldPosition;
 
-	FNode* Parent;
+	FSNode* Parent;
 
 	int GridX;
 	int GridY;
@@ -21,7 +21,7 @@ public:
 	int HCost;
 	int FCost() { return GCost + HCost; }
 
-	FNode() {
+	FSNode() {
 		bWalkable = true;
 		WorldPosition = FVector(0, 0, 0);
 		Parent = nullptr;
@@ -30,7 +30,7 @@ public:
 		GridY = 0;
 	}
 
-	FNode(bool _walkable, FVector _worldPos, int _gridX, int _gridY) {
+	FSNode(bool _walkable, FVector _worldPos, int _gridX, int _gridY) {
 		bWalkable = _walkable;
 		WorldPosition = _worldPos;
 
@@ -38,19 +38,19 @@ public:
 		GridY = _gridY;
 	}
 
-	bool operator==(const FNode& Other) const {
+	bool operator==(const FSNode& Other) const {
 		return WorldPosition == Other.WorldPosition;
 	}
 };
 
-FORCEINLINE uint32 GetTypeHash(const FNode& Node) {
+FORCEINLINE uint32 GetTypeHash(const FSNode& Node) {
 	return GetTypeHash(Node.WorldPosition);
 }
 
 USTRUCT(Atomic)
-struct FGridRow {
+struct FSGridRow {
 	GENERATED_USTRUCT_BODY()
-	TArray<FNode*> Nodes;
+	TArray<FSNode*> Nodes;
 };
 
 UCLASS()
@@ -72,7 +72,7 @@ private:
 	UPROPERTY(EditAnywhere)
 	float NodeRadius;
 	UPROPERTY()
-	TArray<FGridRow> Grid;
+	TArray<FSGridRow> Grid;
 
 	UPROPERTY()
 	int GridSizeX = 10;
@@ -90,16 +90,16 @@ public:
 	UPROPERTY(VisibleAnywhere)
 	class UBoxComponent* BoxCollision;
 
-	TArray<FNode*> Path;
+	TArray<FSNode*> Path;
 
 	UFUNCTION(BlueprintCallable)
 	void CreateGrid();
 
-	FNode* NodeFromWorldPoint(const FVector& worldPosition);
+	FSNode* NodeFromWorldPoint(const FVector& worldPosition);
 
 	bool IsWalkable(const FVector& WorldPoint);
 
-	TArray<FNode*> GetNeighbours(FNode* Node);
+	TArray<FSNode*> GetNeighbours(FSNode* Node);
 
 	UFUNCTION()
 	void DrawDebugGrid();

@@ -26,16 +26,16 @@ void APathFinding::Tick(float DeltaTime)
 
 void APathFinding::FindPath(const FVector& StartPos, const FVector& TargetPos)
 {
-	FNode* StartNode = Grid->NodeFromWorldPoint(StartPos);
-	FNode* TargetNode = Grid->NodeFromWorldPoint(TargetPos);
+	FSNode* StartNode = Grid->NodeFromWorldPoint(StartPos);
+	FSNode* TargetNode = Grid->NodeFromWorldPoint(TargetPos);
 
-	TArray<FNode*> OpenSet;
-	TSet<FNode*> ClosedSet;
+	TArray<FSNode*> OpenSet;
+	TSet<FSNode*> ClosedSet;
 	OpenSet.Emplace(StartNode);
 
 	while (OpenSet.Num() > 0) {
 		// OpenSet에서 FCost가 가장 작으면서, HCost 또한 작은 노드
-		FNode* CurrentNode = OpenSet[0];
+		FSNode* CurrentNode = OpenSet[0];
 		for (int i = 0; i < OpenSet.Num(); i++) {
 			if (
 				OpenSet[i]->FCost() < CurrentNode->FCost() ||
@@ -52,7 +52,7 @@ void APathFinding::FindPath(const FVector& StartPos, const FVector& TargetPos)
 			return;
 		}
 
-		for (FNode* Neighbour : Grid->GetNeighbours(CurrentNode)) {
+		for (FSNode* Neighbour : Grid->GetNeighbours(CurrentNode)) {
 			if (!Neighbour->bWalkable || ClosedSet.Contains(Neighbour)) continue;
 
 			int NewMovementCostToNeighbour = CurrentNode->GCost + GetDistance(CurrentNode, Neighbour);
@@ -70,7 +70,7 @@ void APathFinding::FindPath(const FVector& StartPos, const FVector& TargetPos)
 	}
 }
 
-int APathFinding::GetDistance(FNode* NodeA, FNode* NodeB) {
+int APathFinding::GetDistance(FSNode* NodeA, FSNode* NodeB) {
 
 	int DstX = abs(NodeA->GridX - NodeB->GridX);
 	int DstY = abs(NodeA->GridY - NodeB->GridY);
@@ -80,10 +80,10 @@ int APathFinding::GetDistance(FNode* NodeA, FNode* NodeB) {
 	return 14 * DstX + 10 * (DstY - DstX);
 }
 
-void APathFinding::RetracePath(FNode* StartNode, FNode* EndNode) {
+void APathFinding::RetracePath(FSNode* StartNode, FSNode* EndNode) {
 
 	Grid->Path.Empty();
-	FNode* CurrentNode = EndNode;
+	FSNode* CurrentNode = EndNode;
 
 	while (CurrentNode != StartNode) {
 		Grid->Path.Emplace(CurrentNode);

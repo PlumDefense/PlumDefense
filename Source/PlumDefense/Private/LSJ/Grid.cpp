@@ -47,12 +47,12 @@ void AGrid::CreateGrid()
 		for (int y = 0; y < GridSizeY; y++) {
 			FVector WorldPoint = WorldBottomLeft + FVector(x * NodeDiameter + NodeRadius, y * NodeDiameter + NodeRadius, 0);
 			bool bWalkable = IsWalkable(WorldPoint);
-			Grid[x].Nodes[y] = new FNode(bWalkable, WorldPoint, x, y);
+			Grid[x].Nodes[y] = new FSNode(bWalkable, WorldPoint, x, y);
 		}
 	}
 }
 
-FNode* AGrid::NodeFromWorldPoint(const FVector& worldPosition)
+FSNode* AGrid::NodeFromWorldPoint(const FVector& worldPosition)
 {
 	float PercentX = (worldPosition.X + GridWorldSizeX / 2) / GridWorldSizeX;
 	float PercentY = (worldPosition.Y + GridWorldSizeY / 2) / GridWorldSizeY;
@@ -82,9 +82,9 @@ bool AGrid::IsWalkable(const FVector& WorldPoint)
 	return OverlapResults.Num() == 0;
 }
 
-TArray<FNode*> AGrid::GetNeighbours(FNode* Node)
+TArray<FSNode*> AGrid::GetNeighbours(FSNode* Node)
 {
-	TArray<FNode*> Neighbours;
+	TArray<FSNode*> Neighbours;
 
 	for (int x = -1; x <= 1; x++) {
 		for (int y = -1; y <= 1; y++) {
@@ -104,11 +104,11 @@ TArray<FNode*> AGrid::GetNeighbours(FNode* Node)
 
 void AGrid::DrawDebugGrid()
 {
-	FNode* PlayerNode = NodeFromWorldPoint(GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
+	FSNode* PlayerNode = NodeFromWorldPoint(GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation());
 
 	for (int x = 0; x < GridSizeX; x++) {
 		for (int y = 0; y < GridSizeY; y++) {
-			FNode* Node = Grid[x].Nodes[y];
+			FSNode* Node = Grid[x].Nodes[y];
 			FColor NodesColor = Node->bWalkable ? FColor::Green : FColor::Red;
 			if (!Path.IsEmpty()) {
 				if (Path.Contains(Node)) {
