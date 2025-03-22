@@ -2,20 +2,20 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "S_Enemy.generated.h"
+#include "S_TestBase.generated.h"
 
 UCLASS()
-class PLUMDEFENSE_API AS_Enemy : public AActor
+class PLUMDEFENSE_API AS_TestBase : public AActor
 {
 	GENERATED_BODY()
-
-public:
-	AS_Enemy();
+	
+public:	
+	AS_TestBase();
 
 protected:
 	virtual void BeginPlay() override;
 
-public:
+public:	
 	virtual void Tick(float DeltaTime) override;
 
 
@@ -25,15 +25,4 @@ public:
 
 	UPROPERTY(VisibleAnywhere)
 	class UStaticMeshComponent* MeshComp;
-
-private:
-	UPROPERTY(VisibleAnywhere)
-	float Speed;
-
-	UPROPERTY(VisibleAnywhere)
-	int32 HP;
-
-	UPROPERTY(VisibleAnywhere)
-	int32 DEF;
-
 };

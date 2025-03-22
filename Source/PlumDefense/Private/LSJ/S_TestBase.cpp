@@ -1,9 +1,9 @@
-#include "../../Public/LSJ/S_Enemy.h"
+#include "LSJ/S_TestBase.h"
 #include "Components/BoxComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 
-AS_Enemy::AS_Enemy()
+AS_TestBase::AS_TestBase()
 {
 	PrimaryActorTick.bCanEverTick = true;
 
@@ -17,16 +17,15 @@ AS_Enemy::AS_Enemy()
 		MeshComp->SetStaticMesh(CubeMesh.Object);
 	}
 	MeshComp->SetupAttachment(BoxComp);
-
 }
 
-void AS_Enemy::BeginPlay()
+void AS_TestBase::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-void AS_Enemy::Tick(float DeltaTime)
+void AS_TestBase::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
